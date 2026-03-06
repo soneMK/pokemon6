@@ -68,6 +68,23 @@
     letter-spacing: 0.1em;
   }
 
+  .author-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 4px 14px;
+    transition: all 0.18s;
+  }
+  .author-link:hover {
+    border-color: var(--text);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
   /* ── SEARCH ── */
   .search-section {
     max-width: 520px;
@@ -723,6 +740,7 @@
   </div>
   <h1>推しポケモン 6選</h1>
   <p class="subtitle">MY FAVORITE POKÉMON</p>
+  <a class="author-link" href="https://x.com/ekiben_mk" target="_blank" rel="noopener">𝕏 @ekiben_mk</a>
 </header>
 
 <!-- Trainer Name -->
