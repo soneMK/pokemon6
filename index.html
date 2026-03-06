@@ -1141,7 +1141,8 @@ document.getElementById('shareBtn').addEventListener('click', () => {
   const text = names
     ? `推しポケモン6選 🎮✨\n${names}\n#私の推しポケ6選 #ポケモン`
     : `推しポケモン6選 🎮✨\n#私の推しポケ6選 #ポケモン`;
-  const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+  const siteUrl = 'https://sonemk.github.io/pokemon6/';
+  const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(siteUrl);
   window.open(url, '_blank');
 });
 
