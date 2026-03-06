@@ -869,6 +869,110 @@
     font-size: 0.8rem;
     padding: 20px 0;
   }
+
+  /* ── ACCORDION ── */
+  .accordion {
+    max-width: 520px;
+    margin: 0 auto 16px;
+    padding: 0 20px;
+  }
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-sub);
+    user-select: none;
+    transition: border-color 0.18s, color 0.18s;
+  }
+  .accordion-header:hover { border-color: var(--border-accent); color: var(--text); }
+  .accordion-header.open { border-color: var(--accent); color: var(--text); border-radius: 14px 14px 0 0; }
+  .accordion-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+  }
+  .accordion-header.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body {
+    display: none;
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    padding: 14px 16px;
+  }
+  .accordion-body.open { display: block; }
+  .type-filter {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .type-filter-btn {
+    font-size: 0.65rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    transition: all 0.15s;
+    opacity: 0.55;
+  }
+  .type-filter-btn:hover { opacity: 0.85; }
+  .type-filter-btn.active { opacity: 1; box-shadow: 0 0 0 2px var(--accent); }
+
+  /* ── DRAG & DROP ── */
+  .pokemon-slot.drag-over {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(230,57,80,0.2) !important;
+    transform: scale(1.03);
+  }
+  .pokemon-slot.dragging { opacity: 0.4; }
+
+  /* ── IMAGE SIZE SELECTOR ── */
+  .size-selector {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .size-btn {
+    padding: 5px 14px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-sub);
+    font-size: 0.75rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .size-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .size-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ── CRY BUTTON ── */
+  .cry-btn {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(230,57,80,0.1);
+    border: 1px solid rgba(230,57,80,0.25);
+    color: var(--accent);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    z-index: 5;
+  }
+  .pokemon-slot.filled:hover .cry-btn { opacity: 1; }
+  .cry-btn:hover { background: rgba(230,57,80,0.2); }
 </style>
 </head>
 <body>
@@ -912,22 +1016,13 @@
   <p class="author-msg">ご意見・ご要望は <a class="author-link" href="https://x.com/ekiben_mk" target="_blank" rel="noopener">𝕏 @ekiben_mk</a> まで</p>
 </header>
 
-<!-- PT Manager -->
-<div class="pt-section">
-  <div class="pt-bar">
-    <span class="pt-label">💾 PT保存</span>
-    <input type="text" class="pt-name-input" id="ptNameInput" placeholder="PT名を入力..." maxlength="20" />
-    <button class="pt-save-btn" id="ptSaveBtn">保存</button>
-  </div>
-  <div class="pt-list" id="ptList"></div>
-</div>
+<!-- PT Manager (折りたたみ) -->
 
 <!-- Trainer Name -->
 <div class="trainer-section">
   <span class="trainer-label">🎮 トレーナー名</span>
   <input type="text" class="trainer-input" id="trainerInput" placeholder="あなたの名前を入力..." maxlength="12" />
 </div>
-
 
 <!-- Search -->
 <div class="search-section">
@@ -939,19 +1034,35 @@
     </div>
     <div class="search-results" id="searchResults"></div>
   </div>
-  <div class="gen-filter" id="genFilter">
-    <button class="gen-btn" data-gen="1">第1世代</button>
-    <button class="gen-btn" data-gen="2">第2世代</button>
-    <button class="gen-btn" data-gen="3">第3世代</button>
-    <button class="gen-btn" data-gen="4">第4世代</button>
-    <button class="gen-btn" data-gen="5">第5世代</button>
-    <button class="gen-btn" data-gen="6">第6世代</button>
-    <button class="gen-btn" data-gen="7">第7世代</button>
-    <button class="gen-btn" data-gen="8">第8世代</button>
-    <button class="gen-btn" data-gen="9">第9世代</button>
-  </div>
-  <div class="gen-grid-panel" id="genGridPanel" style="display:none">
-    <div class="gen-grid" id="genGrid"></div>
+
+  <!-- 世代・タイプフィルター (折りたたみ) -->
+  <div style="margin-top:10px">
+    <div class="accordion-header" id="filterAccordionHeader" style="border-radius:14px">
+      <span>🔎 世代・タイプで絞り込む</span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-body" id="filterAccordionBody" style="border-radius:0 0 14px 14px">
+      <div class="gen-filter" id="genFilter">
+        <button class="gen-btn" data-gen="1">第1世代</button>
+        <button class="gen-btn" data-gen="2">第2世代</button>
+        <button class="gen-btn" data-gen="3">第3世代</button>
+        <button class="gen-btn" data-gen="4">第4世代</button>
+        <button class="gen-btn" data-gen="5">第5世代</button>
+        <button class="gen-btn" data-gen="6">第6世代</button>
+        <button class="gen-btn" data-gen="7">第7世代</button>
+        <button class="gen-btn" data-gen="8">第8世代</button>
+        <button class="gen-btn" data-gen="9">第9世代</button>
+      </div>
+      <div class="gen-grid-panel" id="genGridPanel" style="display:none">
+        <div id="genGachaBar" style="display:none;justify-content:flex-end;margin-bottom:8px">
+          <button class="btn btn-gacha" id="genGachaBtn" style="padding:6px 16px;font-size:0.78rem">
+            <span>🎰</span> この世代でガチャ！
+          </button>
+        </div>
+        <div class="gen-grid" id="genGrid"></div>
+      </div>
+      <div class="type-filter" id="typeFilter" style="margin-top:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -986,10 +1097,21 @@
   </button>
 </div>
 
+<!-- PT Manager (フッター) -->
+<div class="pt-section">
+  <div class="pt-bar">
+    <span class="pt-label">💾 PT保存</span>
+    <input type="text" class="pt-name-input" id="ptNameInput" placeholder="PT名を入力..." maxlength="20" />
+    <button class="pt-save-btn" id="ptSaveBtn">保存</button>
+  </div>
+  <div class="pt-list" id="ptList"></div>
+</div>
+
 <!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <p class="modal-title">✦ 推しポケモン6選 ✦</p>
+    <div class="size-selector" id="themeColorPicker" style="flex-wrap:wrap;gap:6px"></div>
     <canvas id="previewCanvas"></canvas>
     <div class="modal-actions">
       <button class="btn-download" id="downloadBtn">📥 ダウンロード</button>
@@ -1160,6 +1282,14 @@ function buildGrid() {
         content.appendChild(switcher);
       }
 
+      // 鳴き声ボタン
+      const cryBtn = document.createElement('button');
+      cryBtn.className = 'cry-btn';
+      cryBtn.title = '鳴き声を再生';
+      cryBtn.innerHTML = '🔊';
+      cryBtn.onclick = (e) => { e.stopPropagation(); playCry(poke.id); };
+      div.appendChild(cryBtn);
+
       div.appendChild(content);
     } else {
       const empty = document.createElement('div');
@@ -1181,6 +1311,28 @@ function buildGrid() {
         showToast('検索してポケモンを選んでね！');
       }
     };
+
+    // Drag & Drop
+    if (poke) {
+      div.draggable = true;
+      div.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', i);
+        setTimeout(() => div.classList.add('dragging'), 0);
+      });
+      div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    }
+    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      div.classList.remove('drag-over');
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = i;
+      if (fromIdx !== toIdx) {
+        [slots[fromIdx], slots[toIdx]] = [slots[toIdx], slots[fromIdx]];
+        buildGrid();
+      }
+    });
 
     grid.appendChild(div);
   });
@@ -1500,22 +1652,31 @@ async function generateImage() {
   const W = 1080, H = 1080;
   canvas.width = W; canvas.height = H;
 
-  // Fixed light canvas palette
+  // テーマカラーから背景・カード色を生成
+  const hex = canvasThemeColor.replace('#','');
+  const tr = parseInt(hex.slice(0,2),16), tg = parseInt(hex.slice(2,4),16), tb = parseInt(hex.slice(4,6),16);
+  const bgColor = `rgb(${Math.min(255,tr+210)},${Math.min(255,tg+210)},${Math.min(255,tb+210)})`;
+  const cardColor = `rgb(${Math.min(255,tr+230)},${Math.min(255,tg+230)},${Math.min(255,tb+230)})`;
   const th = {
-    bodyBg1: '#f7f7f9', cardBg1: '#ffffff', cardBg2: '#f0f0f5',
-    border: 'rgba(200,57,80,0.4)', borderEmpty: 'rgba(180,180,200,0.3)',
-    nameColor: '#1a1a2e', accentColor: '#e63950',
+    bodyBg1: bgColor, cardBg1: cardColor, cardBg2: bgColor,
+    border: canvasThemeColor + '88', borderEmpty: canvasThemeColor + '30',
+    nameColor: '#1a1a2e', accentColor: canvasThemeColor,
   };
 
   // Background
   ctx.fillStyle = th.bodyBg1;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle gradient
-  const grad = ctx.createRadialGradient(200, 150, 0, 200, 150, 600);
-  grad.addColorStop(0, 'rgba(230,57,80,0.06)');
+  // テーマカラーのグラデーション
+  const grad = ctx.createRadialGradient(W*0.15, H*0.1, 0, W*0.15, H*0.1, W*0.6);
+  grad.addColorStop(0, canvasThemeColor + '22');
   grad.addColorStop(1, 'transparent');
   ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  const grad2 = ctx.createRadialGradient(W*0.85, H*0.9, 0, W*0.85, H*0.9, W*0.5);
+  grad2.addColorStop(0, canvasThemeColor + '18');
+  grad2.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad2;
   ctx.fillRect(0, 0, W, H);
 
   // Title
@@ -1530,26 +1691,24 @@ async function generateImage() {
   ctx.fillText(trainerName ? `${trainerName} のパーティ` : 'MY FAVORITE POKÉMON', W/2, 112);
 
   // Accent line
-  ctx.strokeStyle = 'rgba(230,57,80,0.25)';
+  ctx.strokeStyle = canvasThemeColor + '44';
   ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(80, 130); ctx.lineTo(W-80, 130); ctx.stroke();
 
-  // Draw 6 cards
-  const cols = 3, rows = 2;
-  const cw = 300, ch = 380;
-  const gx = (W - cols * cw - (cols-1)*24) / 2;
-  const gy = 155;
+  // Draw 6 cards (1080x1080 fixed)
+  const cols = 3, rows = 2, cw = 300, ch = 380, gap = 24;
+  const gx = (W - cols * cw - (cols-1)*gap) / 2, gy = 155;
 
   for (let i = 0; i < 6; i++) {
     const col = i % cols, row = Math.floor(i / cols);
-    const x = gx + col * (cw + 24);
-    const y = gy + row * (ch + 24);
+    const x = gx + col * (cw + gap);
+    const y = gy + row * (ch + gap);
     await drawCard(ctx, x, y, cw, ch, slots[i], i, th);
   }
 
   // Footer
   ctx.font = '20px "Noto Sans JP", sans-serif';
-  ctx.fillStyle = 'rgba(230,57,80,0.6)';
+  ctx.fillStyle = canvasThemeColor + 'aa';
   ctx.textAlign = 'center';
   ctx.fillText('#私の推しポケ6選', W/2, H - 36);
 
@@ -1695,16 +1854,6 @@ document.getElementById('modalOverlay').addEventListener('click', (e) => {
 });
 
 // ─── X Share ──────────────────────────────────────────────────────────────────
-document.getElementById('shareBtn').addEventListener('click', () => {
-  const names = slots.filter(s => s).map(s => s.nameJp).join('・');
-  const text = names
-    ? `推しポケモン6選 🎮✨\n${names}\n#私の推しポケ6選 #ポケモン`
-    : `推しポケモン6選 🎮✨\n#私の推しポケ6選 #ポケモン`;
-  const siteUrl = 'https://sonemk.github.io/pokemon6/';
-  const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(siteUrl);
-  window.open(url, '_blank');
-});
-
 // ─── Gacha ────────────────────────────────────────────────────────────────────
 document.getElementById('gachaBtn').addEventListener('click', async () => {
   if (!listReady || pokemonList.length === 0) {
@@ -1748,24 +1897,124 @@ document.getElementById('gachaBtn').addEventListener('click', async () => {
   showToast('ランダム6選ガチャ完了！');
 });
 
-// ─── Generation Browser ───────────────────────────────────────────────────────
-// ID ranges per generation
-const GEN_RANGES = {
-  1: [1, 151], 2: [152, 251], 3: [252, 386], 4: [387, 493],
-  5: [494, 649], 6: [650, 721], 7: [722, 809], 8: [810, 905], 9: [906, 1025]
-};
+// ─── Accordion ────────────────────────────────────────────────────────────────
+function setupAccordion(headerId, bodyId) {
+  const header = document.getElementById(headerId);
+  const body = document.getElementById(bodyId);
+  header.addEventListener('click', () => {
+    const isOpen = body.classList.toggle('open');
+    header.classList.toggle('open', isOpen);
+  });
+}
+setupAccordion('filterAccordionHeader', 'filterAccordionBody');
 
-let activeGen = null;
+// ─── Type Filter ──────────────────────────────────────────────────────────────
+const TYPE_LIST = ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+const TYPE_COLORS = { normal:'#a8a878',fire:'#f08030',water:'#6890f0',electric:'#f8d030',grass:'#78c850',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',steel:'#b8b8d0',fairy:'#ee99ac' };
+const TYPE_JP = { normal:'ノーマル',fire:'ほのお',water:'みず',electric:'でんき',grass:'くさ',ice:'こおり',fighting:'かくとう',poison:'どく',ground:'じめん',flying:'ひこう',psychic:'エスパー',bug:'むし',rock:'いわ',ghost:'ゴースト',dragon:'ドラゴン',dark:'あく',steel:'はがね',fairy:'フェアリー' };
+
+let activeTypeFilter = null;
+let canvasThemeColor = '#e63950'; // 画像生成テーマカラー
+
+(function buildTypeFilter() {
+  const container = document.getElementById('typeFilter');
+  TYPE_LIST.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'type-filter-btn';
+    btn.dataset.type = t;
+    btn.textContent = TYPE_JP[t];
+    btn.style.background = TYPE_COLORS[t];
+    btn.style.color = ['electric','ground','ice','steel','normal'].includes(t) ? '#333' : '#fff';
+    btn.onclick = () => {
+      activeTypeFilter = activeTypeFilter === t ? null : t;
+      document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.type === activeTypeFilter));
+      if (activeGen !== null) renderGenGrid(activeGen);
+    };
+    container.appendChild(btn);
+  });
+})();
+
+// ─── Canvas Theme Color Picker ────────────────────────────────────────────────
+(function buildThemePicker() {
+  const container = document.getElementById('themeColorPicker');
+  const themes = [
+    { label: 'デフォ', color: '#e63950' },
+    ...TYPE_LIST.map(t => ({ label: TYPE_JP[t], color: TYPE_COLORS[t] }))
+  ];
+  themes.forEach(({ label, color }) => {
+    const btn = document.createElement('button');
+    btn.className = 'type-filter-btn' + (color === '#e63950' ? ' active' : '');
+    btn.textContent = label;
+    btn.style.background = color;
+    btn.style.color = ['#f8d030','#e0c068','#98d8d8','#b8b8d0','#a8a878','#a8b820'].includes(color) ? '#333' : '#fff';
+    btn.style.fontSize = '0.68rem';
+    btn.style.padding = '3px 10px';
+    btn.onclick = () => {
+      canvasThemeColor = color;
+      document.querySelectorAll('#themeColorPicker .type-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      generateImage();
+    };
+    container.appendChild(btn);
+  });
+})();
+
+// ─── Generation Browser (updated with type filter + gen gacha) ────────────────
+function renderGenGrid(gen) {
+  const panel = document.getElementById('genGridPanel');
+  const grid = document.getElementById('genGrid');
+  const gachaBar = document.getElementById('genGachaBar');
+  panel.style.display = 'block';
+  gachaBar.style.display = 'flex';
+  grid.innerHTML = '<div class="gen-loading">読み込み中...</div>';
+
+  const [start, end] = GEN_RANGES[gen];
+  let mons = pokemonList.filter(p => p.id >= start && p.id <= end);
+
+  if (activeTypeFilter) {
+    mons = mons.filter(p => typeCache[p.id] && typeCache[p.id].types.includes(activeTypeFilter));
+  }
+
+  if (!mons.length) {
+    grid.innerHTML = '<div class="gen-loading">該当するポケモンがいません</div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  mons.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'gen-item';
+    const img = document.createElement('img');
+    img.src = `${spriteBase}${p.id}.png`;
+    img.alt = p.nameJp || p.nameEn;
+    img.loading = 'lazy';
+    const name = document.createElement('div');
+    name.className = 'gen-item-name';
+    name.textContent = p.nameJp || p.nameEn;
+    item.appendChild(img);
+    item.appendChild(name);
+    item.onclick = () => {
+      selectPokemon(p.id, p.nameJp || p.nameEn);
+      activeGen = null;
+      document.querySelectorAll('.gen-btn').forEach(b => b.classList.remove('active'));
+      panel.style.display = 'none';
+      gachaBar.style.display = 'none';
+    };
+    grid.appendChild(item);
+  });
+}
 
 document.getElementById('genFilter').addEventListener('click', e => {
   const btn = e.target.closest('.gen-btn');
   if (!btn) return;
   const gen = parseInt(btn.dataset.gen);
+  const panel = document.getElementById('genGridPanel');
+  const gachaBar = document.getElementById('genGachaBar');
   if (activeGen === gen) {
-    // toggle off
     activeGen = null;
     document.querySelectorAll('.gen-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('genGridPanel').style.display = 'none';
+    panel.style.display = 'none';
+    gachaBar.style.display = 'none';
     return;
   }
   activeGen = gen;
@@ -1774,47 +2023,124 @@ document.getElementById('genFilter').addEventListener('click', e => {
   renderGenGrid(gen);
 });
 
-function renderGenGrid(gen) {
-  const panel = document.getElementById('genGridPanel');
-  const grid = document.getElementById('genGrid');
-  panel.style.display = 'block';
-  grid.innerHTML = '<div class="gen-loading">読み込み中...</div>';
+// 世代限定ガチャ
+document.getElementById('genGachaBtn').addEventListener('click', async () => {
+  if (!listReady || activeGen === null) return;
+  const [start, end] = GEN_RANGES[activeGen];
+  let pool = pokemonList.filter(p => p.id >= start && p.id <= end);
+  if (activeTypeFilter) pool = pool.filter(p => typeCache[p.id] && typeCache[p.id].types.includes(activeTypeFilter));
+  if (pool.length === 0) { showToast('対象のポケモンがいません'); return; }
 
-  const [start, end] = GEN_RANGES[gen];
-  // Filter from pokemonList (already loaded)
-  const mons = pokemonList.filter(p => p.id >= start && p.id <= end);
+  const btn = document.getElementById('genGachaBtn');
+  btn.disabled = true;
+  const picked = [];
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  picked.push(...shuffled.slice(0, Math.min(6, shuffled.length)));
+  // fill remaining slots with repeats if pool < 6
+  while (picked.length < 6) picked.push(pool[Math.floor(Math.random() * pool.length)]);
 
-  if (!mons.length) {
-    grid.innerHTML = '<div class="gen-loading">データを読み込み中です。少し待ってからもう一度お試しください。</div>';
-    return;
-  }
+  slots = [null,null,null,null,null,null];
+  await Promise.all(picked.map(async (p, i) => {
+    let types = [], name = p.nameEn;
+    try {
+      if (!typeCache[p.id]) {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
+        const data = await res.json();
+        typeCache[p.id] = { types: data.types.map(t => t.type.name), nameEn: data.name };
+      }
+      types = typeCache[p.id].types; name = typeCache[p.id].nameEn;
+    } catch(e) {}
+    if (!p.nameJp) p.nameJp = await getJpName(p.id, name);
+    slots[i] = { id: p.id, pokeId: p.id, nameJp: p.nameJp || name, name, types, forms: [], activeFormKey: name, comment: '' };
+  }));
 
-  grid.innerHTML = '';
-  mons.forEach(p => {
-    const item = document.createElement('div');
-    item.className = 'gen-item';
+  buildGrid();
+  btn.disabled = false;
+  showToast(`第${activeGen}世代ガチャ完了！`);
+});
 
-    const img = document.createElement('img');
-    img.src = `${spriteBase}${p.id}.png`;
-    img.alt = p.nameJp || p.nameEn;
-    img.loading = 'lazy';
-
-    const name = document.createElement('div');
-    name.className = 'gen-item-name';
-    name.textContent = p.nameJp || p.nameEn;
-
-    item.appendChild(img);
-    item.appendChild(name);
-    item.onclick = () => {
-      selectPokemon(p.id, p.nameJp || p.nameEn);
-      // パネルを閉じる
-      activeGen = null;
-      document.querySelectorAll('.gen-btn').forEach(b => b.classList.remove('active'));
-      panel.style.display = 'none';
-    };
-    grid.appendChild(item);
-  });
+// ─── Cry (鳴き声) ─────────────────────────────────────────────────────────────
+function playCry(id) {
+  const url = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`;
+  try {
+    const audio = new Audio(url);
+    audio.volume = 0.5;
+    audio.play().catch(() => showToast('鳴き声を読み込めませんでした'));
+  } catch(e) { showToast('鳴き声の再生に失敗しました'); }
 }
+
+// ─── URL Share ────────────────────────────────────────────────────────────────
+function buildShareURL() {
+  const ids = slots.map(s => s ? `${s.pokeId || s.id}` : '0').join(',');
+  const trainer = encodeURIComponent(trainerName);
+  return `${location.origin}${location.pathname}?pt=${ids}&trainer=${trainer}`;
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(location.search);
+  const pt = params.get('pt');
+  const trainer = params.get('trainer');
+  if (!pt) return;
+  if (trainer) {
+    trainerName = decodeURIComponent(trainer);
+    document.getElementById('trainerInput').value = trainerName;
+  }
+  const ids = pt.split(',').map(Number);
+  // Load asynchronously after pokemonList is ready
+  const tryLoad = async () => {
+    slots = [null,null,null,null,null,null];
+    await Promise.all(ids.map(async (pokeId, i) => {
+      if (!pokeId || i >= 6) return;
+      let types = [], name = '';
+      try {
+        if (!typeCache[pokeId]) {
+          const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokeId}`);
+          const data = await res.json();
+          typeCache[pokeId] = { types: data.types.map(t => t.type.name), nameEn: data.name };
+        }
+        types = typeCache[pokeId].types; name = typeCache[pokeId].nameEn;
+      } catch(e) {}
+      const speciesId = pokemonList.find(p => p.id === pokeId)?.id || pokeId;
+      const nameJp = await getJpName(speciesId, name);
+      slots[i] = { id: speciesId, pokeId, nameJp, name, types, forms: [], activeFormKey: name, comment: '' };
+    }));
+    buildGrid();
+    showToast('URLからPTを読み込みました！');
+  };
+  // Wait for list ready
+  const wait = setInterval(() => { if (listReady) { clearInterval(wait); tryLoad(); } }, 200);
+}
+
+// URLコピーボタン
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const names = slots.filter(s => s).map(s => s.nameJp).join('・');
+  const shareUrl = buildShareURL();
+  const text = names
+    ? `推しポケモン6選 🎮✨\n${names}\n#私の推しポケ6選 #ポケモン`
+    : `推しポケモン6選 🎮✨\n#私の推しポケ6選 #ポケモン`;
+  const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(shareUrl);
+  window.open(url, '_blank');
+});
+
+// PTリンクコピーボタン追加
+document.querySelector('.actions').insertAdjacentHTML('beforeend', `
+  <button class="btn" id="copyLinkBtn" style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border)">
+    <span class="btn-icon">🔗</span> リンクをコピー
+  </button>
+`);
+document.getElementById('copyLinkBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(buildShareURL()).then(() => showToast('リンクをコピーしました！'));
+});
+
+// ─── Image Size Selector ──────────────────────────────────────────────────────
+// ─── Generation Browser ───────────────────────────────────────────────────────
+// ID ranges per generation
+const GEN_RANGES = {
+  1: [1, 151], 2: [152, 251], 3: [252, 386], 4: [387, 493],
+  5: [494, 649], 6: [650, 721], 7: [722, 809], 8: [810, 905], 9: [906, 1025]
+};
+
+let activeGen = null;
 
 // ─── PT Manager ───────────────────────────────────────────────────────────────
 const PT_STORAGE_KEY = 'oshi_pokemon_pts';
@@ -1904,6 +2230,7 @@ function showToast(msg) {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 buildGrid();
 renderPTList();
+loadFromURL();
 loadPokemonList();
 </script>
 </body>
