@@ -357,6 +357,59 @@
 
   .comment-area::placeholder { color: var(--text-muted); }
 
+  /* ── FORM SWITCHER ── */
+  .form-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 6px;
+    padding: 0 6px;
+  }
+  .form-btn {
+    font-size: 0.55rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    border: 1px solid var(--border-accent);
+    background: transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+    white-space: nowrap;
+    line-height: 1.6;
+  }
+  .form-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .form-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ── FORM SWITCHER ── */
+  .form-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 6px;
+    padding: 0 8px;
+  }
+  .form-btn {
+    font-size: 0.58rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border-accent);
+    background: transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .form-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .form-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
   /* ── ACTION BUTTONS ── */
   .actions {
     max-width: 900px;
@@ -733,6 +786,21 @@
 // ─── Pokemon Data (Japanese names) ───────────────────────────────────────────
 // Type data cache
 const typeCache = {};
+const varietiesCache = {}; // speciesId → [{formKey, pokeId, label, isDefault}]
+
+// リージョンフォームのサフィックス → 日本語ラベル
+const REGION_SUFFIXES = {
+  'alola':'アローラ', 'galar':'ガラル', 'hisui':'ヒスイ', 'paldea':'パルデア'
+};
+function getRegionalForms(varieties) {
+  // default form + regional forms only
+  return varieties.filter(v => {
+    if (v.isDefault) return true;
+    const suffix = v.formKey.split('-').slice(1).join('-');
+    return Object.keys(REGION_SUFFIXES).some(r => suffix === r || suffix.startsWith(r));
+  });
+}
+const varietiesCache = {}; // speciesId → [{formKey, nameJp, nameEn}]
 const spriteBase = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
 
 // ─── Full Pokémon list fetched from PokeAPI ───────────────────────────────────
@@ -826,7 +894,7 @@ function buildGrid() {
 
       const img = document.createElement('img');
       img.className = 'slot-sprite';
-      img.src = `${spriteBase}${poke.id}.png`;
+      img.src = `${spriteBase}${poke.pokeId || poke.id}.png`;
       img.alt = poke.nameJp;
       content.appendChild(img);
 
@@ -860,6 +928,20 @@ function buildGrid() {
       comment.onclick = (e) => e.stopPropagation();
       comment.oninput = () => { poke.comment = comment.value; };
       content.appendChild(comment);
+
+      // フォーム切り替えボタン（リージョンフォームがある場合のみ）
+      if (poke.forms && poke.forms.length > 1) {
+        const switcher = document.createElement('div');
+        switcher.className = 'form-switcher';
+        poke.forms.forEach(form => {
+          const btn = document.createElement('button');
+          btn.className = 'form-btn' + (form.formKey === poke.activeFormKey ? ' active' : '');
+          btn.textContent = form.label;
+          btn.onclick = (e) => { e.stopPropagation(); switchForm(i, form); };
+          switcher.appendChild(btn);
+        });
+        content.appendChild(switcher);
+      }
 
       div.appendChild(content);
     } else {
@@ -1119,14 +1201,12 @@ async function selectPokemon(id, nameJp) {
   searchInput.value = '';
   clearBtn.style.display = 'none';
 
-  // Find empty slot
   let targetSlot = selectedSlot >= 0 ? selectedSlot : slots.findIndex(s => !s);
   selectedSlot = -1;
   if (targetSlot < 0) { showToast('スロットが全て埋まっています！'); return; }
 
-  // Fetch type data
-  let types = [];
-  let name = nameJp;
+  // Fetch base pokemon data (types + EN name)
+  let types = [], name = nameJp;
   try {
     if (!typeCache[id]) {
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
@@ -1137,9 +1217,50 @@ async function selectPokemon(id, nameJp) {
     name = typeCache[id].nameEn;
   } catch(e) {}
 
-  slots[targetSlot] = { id, nameJp, name, types, comment: '' };
+  // Fetch varieties to find regional forms
+  let forms = [];
+  try {
+    if (!varietiesCache[id]) {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+      const data = await res.json();
+      const parsed = data.varieties.map(v => {
+        const pokeId = parseInt(v.pokemon.url.split('/').filter(Boolean).pop());
+        const formKey = v.pokemon.name; // e.g. "raichu-alola"
+        const suffix = formKey.split('-').slice(1).join('-');
+        const regionKey = Object.keys(REGION_SUFFIXES).find(r => suffix === r || suffix.startsWith(r));
+        const label = regionKey ? `${REGION_SUFFIXES[regionKey]}のすがた` : '通常のすがた';
+        return { formKey, pokeId, label, isDefault: v.is_default };
+      });
+      varietiesCache[id] = getRegionalForms(parsed);
+    }
+    forms = varietiesCache[id];
+  } catch(e) {}
+
+  slots[targetSlot] = {
+    id, pokeId: id, nameJp, name, types,
+    forms: forms.length > 1 ? forms : [],
+    activeFormKey: name, // default form EN name
+    comment: ''
+  };
   buildGrid();
   showToast(`${nameJp} を追加しました！`);
+}
+
+async function switchForm(slotIdx, form) {
+  const poke = slots[slotIdx];
+  if (!poke) return;
+  // Fetch types for this form's pokeId
+  try {
+    if (!typeCache[form.pokeId]) {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${form.pokeId}`);
+      const data = await res.json();
+      typeCache[form.pokeId] = { types: data.types.map(t => t.type.name), nameEn: data.name };
+    }
+    poke.types = typeCache[form.pokeId].types;
+  } catch(e) {}
+  poke.pokeId = form.pokeId;
+  poke.activeFormKey = form.formKey;
+  buildGrid();
 }
 
 // ─── Canvas Image Generation ──────────────────────────────────────────────────
@@ -1255,7 +1376,7 @@ async function drawCard(ctx, x, y, w, h, poke, idx, th) {
       resolve();
     };
     img.onerror = () => resolve();
-    img.src = `${spriteBase}${poke.id}.png`;
+    img.src = `${spriteBase}${poke.pokeId || poke.id}.png`;
   });
 
   // No.
