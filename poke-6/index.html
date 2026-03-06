@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#私を構成するポケモン6匹</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>#私を構成するポケモン6匹</h1>
+        <div class="grid">
+            <div class="slot" onclick="selectSlot(0)"></div>
+            <div class="slot" onclick="selectSlot(1)"></div>
+            <div class="slot" onclick="selectSlot(2)"></div>
+            <div class="slot" onclick="selectSlot(3)"></div>
+            <div class="slot" onclick="selectSlot(4)"></div>
+            <div class="slot" onclick="selectSlot(5)"></div>
+        </div>
+
+        <div class="controls">
+            <div id="status"></div>
+            <input type="text" id="p-input" placeholder="名前を入力（カタカナ）">
+            <div class="btn-group">
+                <button onclick="generateImage()">保存用画像作成</button>
+                <button id="share-btn" class="share" style="display:none;">Xでシェア</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="export-canvas" style="display:none;"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>
