@@ -7,36 +7,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --hyper-black: #0a0a0f;
-    --hyper-deep: #10101a;
-    --hyper-gold: #f5c842;
-    --hyper-gold2: #e8a000;
-    --hyper-blue: #1a1aff;
-    --hyper-blue-light: #4466ff;
-    --hyper-white: #f0f0ff;
-    --hyper-gray: #2a2a3a;
-    --hyper-red: #cc2233;
-    --stripe-gold: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 5px,
-      rgba(245,200,66,0.05) 5px,
-      rgba(245,200,66,0.05) 10px
-    );
+    --bg: #f7f7f9;
+    --surface: #ffffff;
+    --surface2: #f0f0f5;
+    --border: #e0e0ea;
+    --border-accent: #c8c8e0;
+    --text: #1a1a2e;
+    --text-sub: #6b6b8a;
+    --text-muted: #aaaacc;
+    --accent: #e63950;
+    --accent2: #c42d40;
+    --gold: #f0a000;
+    --shadow: rgba(0,0,0,0.08);
+    --shadow-md: rgba(0,0,0,0.14);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--hyper-black);
-    color: var(--hyper-white);
+    background: var(--bg);
+    color: var(--text);
     font-family: 'Noto Sans JP', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
-    background-image:
-      radial-gradient(ellipse at 20% 10%, rgba(204,17,17,0.1) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 90%, rgba(245,200,66,0.06) 0%, transparent 50%),
-      var(--stripe-gold);
   }
 
   /* ── HEADER ── */
@@ -58,24 +51,20 @@
     50% { transform: translateY(-10px); }
   }
 
-  .ball-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 16px rgba(204,17,17,0.7)) drop-shadow(0 0 6px rgba(0,0,0,0.8)); }
+  .ball-svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
 
   h1 {
     font-family: 'Zen Dots', cursive;
     font-size: clamp(1.6rem, 5vw, 2.8rem);
     letter-spacing: 0.04em;
-    background: linear-gradient(135deg, var(--hyper-gold) 0%, #fff 50%, var(--hyper-gold2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
+    color: var(--text);
     line-height: 1.2;
   }
 
   .subtitle {
     margin-top: 8px;
     font-size: 0.85rem;
-    color: rgba(240,240,255,0.5);
+    color: var(--text-muted);
     letter-spacing: 0.1em;
   }
 
@@ -90,22 +79,23 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: var(--hyper-deep);
-    border: 1.5px solid var(--hyper-gold);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
     border-radius: 50px;
     overflow: hidden;
-    box-shadow: 0 0 20px rgba(245,200,66,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
-    transition: box-shadow 0.2s;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: box-shadow 0.2s, border-color 0.2s;
   }
 
   .search-wrapper:focus-within {
-    box-shadow: 0 0 30px rgba(245,200,66,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(230,57,80,0.1);
   }
 
   .search-icon {
     padding: 0 14px 0 18px;
     font-size: 1.1rem;
-    opacity: 0.6;
+    opacity: 0.5;
     flex-shrink: 0;
   }
 
@@ -115,36 +105,36 @@
     border: none;
     outline: none;
     padding: 14px 4px;
-    color: var(--hyper-white);
+    color: var(--text);
     font-family: 'Noto Sans JP', sans-serif;
     font-size: 1rem;
-    caret-color: var(--hyper-gold);
+    caret-color: var(--accent);
   }
 
-  #searchInput::placeholder { color: rgba(240,240,255,0.3); }
+  #searchInput::placeholder { color: var(--text-muted); }
 
   .clear-btn {
     padding: 0 18px;
     background: none;
     border: none;
-    color: rgba(240,240,255,0.4);
+    color: var(--text-muted);
     cursor: pointer;
     font-size: 1.1rem;
     transition: color 0.2s;
     flex-shrink: 0;
   }
-  .clear-btn:hover { color: var(--hyper-gold); }
+  .clear-btn:hover { color: var(--accent); }
 
   .search-results {
     position: absolute;
     top: calc(100% + 8px);
     left: 0; right: 0;
-    background: #14141e;
-    border: 1px solid rgba(245,200,66,0.3);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     z-index: 100;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    box-shadow: 0 8px 32px var(--shadow-md);
     display: none;
   }
 
@@ -155,19 +145,19 @@
     padding: 10px 16px;
     cursor: pointer;
     transition: background 0.15s;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
   }
 
   .search-result-item:last-child { border-bottom: none; }
-  .search-result-item:hover { background: rgba(245,200,66,0.08); }
+  .search-result-item:hover { background: var(--surface2); }
 
   .result-sprite {
     width: 40px; height: 40px;
     image-rendering: pixelated;
   }
 
-  .result-name { font-size: 0.95rem; font-weight: 700; }
-  .result-id { font-size: 0.75rem; color: rgba(240,240,255,0.4); margin-left: auto; }
+  .result-name { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+  .result-id { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
 
   /* ── SLOTS GRID ── */
   .slots-section {
@@ -180,7 +170,7 @@
     text-align: center;
     font-size: 0.75rem;
     letter-spacing: 0.15em;
-    color: rgba(240,240,255,0.35);
+    color: var(--text-muted);
     margin-bottom: 24px;
     text-transform: uppercase;
   }
@@ -199,8 +189,8 @@
   .pokemon-slot {
     aspect-ratio: 3/4;
     border-radius: 20px;
-    border: 1.5px solid rgba(245,200,66,0.2);
-    background: var(--hyper-deep);
+    border: 1.5px solid var(--border);
+    background: var(--surface);
     position: relative;
     overflow: hidden;
     cursor: pointer;
@@ -209,21 +199,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 8px var(--shadow);
   }
 
   .pokemon-slot:hover {
     transform: translateY(-4px) scale(1.02);
-    border-color: var(--hyper-gold);
-    box-shadow: 0 8px 32px rgba(245,200,66,0.2);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(230,57,80,0.15);
   }
 
   .pokemon-slot.filled {
-    border-color: rgba(245,200,66,0.5);
-    background: linear-gradient(160deg, #12121c 0%, #0d0d1a 100%);
+    border-color: var(--border-accent);
+    background: var(--surface);
   }
 
   .pokemon-slot.filled:hover {
-    box-shadow: 0 8px 40px rgba(245,200,66,0.3);
+    border-color: var(--accent);
+    box-shadow: 0 8px 28px rgba(230,57,80,0.18);
   }
 
   /* Ball decoration inside card */
@@ -231,7 +223,7 @@
     position: absolute;
     bottom: -30px; right: -30px;
     width: 100px; height: 100px;
-    opacity: 0.05;
+    opacity: 0.04;
   }
 
   /* Slot number badge */
@@ -240,8 +232,7 @@
     top: 10px; left: 12px;
     font-family: 'Zen Dots', cursive;
     font-size: 0.7rem;
-    color: var(--hyper-gold);
-    opacity: 0.7;
+    color: var(--text-muted);
   }
 
   /* Remove button */
@@ -250,9 +241,9 @@
     top: 8px; right: 8px;
     width: 22px; height: 22px;
     border-radius: 50%;
-    background: rgba(204,34,51,0.15);
-    border: 1px solid rgba(204,34,51,0.4);
-    color: var(--hyper-red);
+    background: rgba(230,57,80,0.1);
+    border: 1px solid rgba(230,57,80,0.3);
+    color: var(--accent);
     font-size: 0.75rem;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
@@ -262,7 +253,7 @@
   }
 
   .pokemon-slot.filled:hover .remove-btn { opacity: 1; }
-  .remove-btn:hover { background: rgba(204,34,51,0.4); }
+  .remove-btn:hover { background: rgba(230,57,80,0.2); }
 
   /* Empty state */
   .slot-empty {
@@ -270,17 +261,15 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    opacity: 0.35;
+    opacity: 0.3;
     pointer-events: none;
   }
 
-  .slot-empty-ball {
-    width: 48px; height: 48px;
-  }
+  .slot-empty-ball { width: 48px; height: 48px; }
 
   .slot-empty-text {
     font-size: 0.78rem;
-    color: rgba(240,240,255,0.6);
+    color: var(--text-sub);
     text-align: center;
     line-height: 1.4;
   }
@@ -299,7 +288,7 @@
   .slot-rank {
     font-family: 'Zen Dots', cursive;
     font-size: 0.65rem;
-    color: var(--hyper-gold);
+    color: var(--text-muted);
     letter-spacing: 0.1em;
     margin-bottom: 4px;
   }
@@ -307,7 +296,7 @@
   .slot-sprite {
     width: 80px; height: 80px;
     image-rendering: pixelated;
-    filter: drop-shadow(0 4px 12px rgba(245,200,66,0.3));
+    filter: drop-shadow(0 4px 8px var(--shadow-md));
     animation: bob 2.5s ease-in-out infinite;
   }
 
@@ -320,13 +309,13 @@
     font-size: 0.95rem;
     font-weight: 900;
     margin-top: 8px;
-    color: var(--hyper-white);
+    color: var(--text);
     letter-spacing: 0.05em;
   }
 
   .slot-name-en {
     font-size: 0.65rem;
-    color: rgba(240,240,255,0.4);
+    color: var(--text-muted);
     margin-top: 2px;
     font-family: 'Zen Dots', cursive;
     letter-spacing: 0.08em;
@@ -351,11 +340,11 @@
     width: calc(100% - 16px);
     margin-top: 8px;
     font-size: 0.7rem;
-    color: rgba(240,240,255,0.5);
+    color: var(--text-sub);
     text-align: center;
     background: transparent;
     border: none;
-    border-top: 1px solid rgba(245,200,66,0.1);
+    border-top: 1px solid var(--border);
     padding-top: 8px;
     resize: none;
     outline: none;
@@ -366,7 +355,7 @@
     cursor: text;
   }
 
-  .comment-area::placeholder { color: rgba(240,240,255,0.2); }
+  .comment-area::placeholder { color: var(--text-muted); }
 
   /* ── ACTION BUTTONS ── */
   .actions {
@@ -395,29 +384,29 @@
   }
 
   .btn-generate {
-    background: linear-gradient(135deg, var(--hyper-gold) 0%, var(--hyper-gold2) 100%);
-    color: var(--hyper-black);
-    box-shadow: 0 4px 20px rgba(245,200,66,0.4);
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(230,57,80,0.35);
   }
 
   .btn-generate:hover {
+    background: var(--accent2);
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(245,200,66,0.6);
+    box-shadow: 0 8px 24px rgba(230,57,80,0.45);
   }
 
   .btn-generate:active { transform: translateY(0); }
 
   .btn-share {
-    background: var(--hyper-black);
-    color: var(--hyper-white);
-    border: 1.5px solid rgba(240,240,255,0.2);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    background: #1a1a2e;
+    color: #fff;
+    box-shadow: 0 4px 16px var(--shadow-md);
   }
 
   .btn-share:hover {
-    border-color: var(--hyper-white);
+    background: #2a2a3e;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 8px 24px var(--shadow-md);
   }
 
   .btn-icon { font-size: 1.1rem; }
@@ -426,7 +415,7 @@
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.5);
     backdrop-filter: blur(8px);
     z-index: 200;
     display: flex;
@@ -444,13 +433,13 @@
   }
 
   .modal-box {
-    background: #12121e;
-    border: 1.5px solid rgba(245,200,66,0.3);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 24px;
     padding: 28px;
     max-width: 540px;
     width: 100%;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+    box-shadow: 0 24px 60px var(--shadow-md);
     transform: translateY(20px);
     transition: transform 0.3s;
   }
@@ -460,7 +449,7 @@
   .modal-title {
     font-family: 'Zen Dots', cursive;
     font-size: 1rem;
-    color: var(--hyper-gold);
+    color: var(--text);
     margin-bottom: 16px;
     text-align: center;
   }
@@ -469,7 +458,7 @@
     width: 100%;
     border-radius: 12px;
     display: block;
-    border: 1px solid rgba(245,200,66,0.2);
+    border: 1px solid var(--border);
   }
 
   .modal-actions {
@@ -480,8 +469,8 @@
   }
 
   .btn-download {
-    background: linear-gradient(135deg, var(--hyper-gold) 0%, var(--hyper-gold2) 100%);
-    color: var(--hyper-black);
+    background: var(--accent);
+    color: #fff;
     padding: 11px 24px;
     border-radius: 50px;
     border: none;
@@ -492,21 +481,21 @@
     font-family: 'Noto Sans JP', sans-serif;
   }
 
-  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,200,66,0.4); }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(230,57,80,0.35); }
 
   .btn-close-modal {
     background: transparent;
-    color: rgba(240,240,255,0.5);
+    color: var(--text-sub);
     padding: 11px 24px;
     border-radius: 50px;
-    border: 1px solid rgba(240,240,255,0.15);
+    border: 1px solid var(--border);
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Noto Sans JP', sans-serif;
   }
 
-  .btn-close-modal:hover { border-color: rgba(240,240,255,0.4); color: var(--hyper-white); }
+  .btn-close-modal:hover { border-color: var(--border-accent); color: var(--text); }
 
   /* Type colors */
   .type-normal { background: #a8a878; color: #fff; }
@@ -526,14 +515,14 @@
   .type-dragon { background: #7038f8; color: #fff; }
   .type-dark { background: #705848; color: #fff; }
   .type-steel { background: #b8b8d0; color: #333; }
-  .type-fairy { background: #f0b6bc; color: #333; }
+  .type-fairy { background: #ee99ac; color: #fff; }
 
   /* Loading spinner */
   .loading-spinner {
     display: inline-block;
     width: 16px; height: 16px;
-    border: 2px solid rgba(0,0,0,0.3);
-    border-top-color: var(--hyper-black);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     vertical-align: middle;
@@ -546,16 +535,15 @@
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%) translateY(80px);
-    background: #1e1e2e;
-    border: 1px solid rgba(245,200,66,0.4);
-    color: var(--hyper-white);
+    background: var(--text);
+    color: #fff;
     padding: 12px 24px;
     border-radius: 50px;
     font-size: 0.85rem;
     transition: transform 0.3s;
     z-index: 999;
     white-space: nowrap;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 24px var(--shadow-md);
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -570,72 +558,28 @@
   }
   .trainer-label {
     font-size: 0.8rem;
-    color: rgba(240,240,255,0.4);
+    color: var(--text-sub);
     white-space: nowrap;
     letter-spacing: 0.08em;
   }
   .trainer-input {
     flex: 1;
-    background: var(--hyper-deep);
-    border: 1.5px solid rgba(245,200,66,0.25);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
     border-radius: 50px;
     padding: 10px 18px;
-    color: var(--hyper-white);
+    color: var(--text);
     font-family: 'Noto Sans JP', sans-serif;
     font-size: 0.95rem;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
-    caret-color: var(--hyper-gold);
+    caret-color: var(--accent);
   }
   .trainer-input:focus {
-    border-color: var(--hyper-gold);
-    box-shadow: 0 0 16px rgba(245,200,66,0.2);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(230,57,80,0.1);
   }
-  .trainer-input::placeholder { color: rgba(240,240,255,0.25); }
-
-  /* ── THEME SELECTOR ── */
-  .theme-section {
-    max-width: 520px;
-    margin: 0 auto 32px;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .theme-label {
-    font-size: 0.8rem;
-    color: rgba(240,240,255,0.4);
-    white-space: nowrap;
-    letter-spacing: 0.08em;
-    flex-shrink: 0;
-  }
-  .theme-select {
-    flex: 1;
-    background: var(--hyper-deep);
-    border: 1.5px solid rgba(245,200,66,0.25);
-    border-radius: 50px;
-    padding: 10px 18px;
-    color: var(--hyper-white);
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f5c842' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-color: var(--hyper-deep);
-    padding-right: 40px;
-  }
-  .theme-select:focus {
-    border-color: var(--hyper-gold);
-    box-shadow: 0 0 16px rgba(245,200,66,0.2);
-  }
-  .theme-select option {
-    background: #1a1a28;
-    color: var(--hyper-white);
-  }
+  .trainer-input::placeholder { color: var(--text-muted); }
 
   /* ── TYPE CHART ── */
   .type-chart-section {
@@ -644,15 +588,16 @@
     padding: 0 20px;
   }
   .type-chart-box {
-    background: var(--hyper-deep);
-    border: 1px solid rgba(245,200,66,0.15);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 20px;
     padding: 20px 24px;
+    box-shadow: 0 2px 8px var(--shadow);
   }
   .type-chart-title {
     font-size: 0.75rem;
     letter-spacing: 0.12em;
-    color: rgba(240,240,255,0.35);
+    color: var(--text-muted);
     text-transform: uppercase;
     text-align: center;
     margin-bottom: 14px;
@@ -669,7 +614,7 @@
   }
   .type-chart-row-label {
     font-size: 0.7rem;
-    color: rgba(240,240,255,0.45);
+    color: var(--text-sub);
     width: 48px;
     flex-shrink: 0;
     text-align: right;
@@ -681,7 +626,7 @@
   }
   .type-chart-empty {
     font-size: 0.75rem;
-    color: rgba(240,240,255,0.25);
+    color: var(--text-muted);
     text-align: center;
     padding: 8px 0;
   }
@@ -733,11 +678,6 @@
   <input type="text" class="trainer-input" id="trainerInput" placeholder="あなたの名前を入力..." maxlength="12" />
 </div>
 
-<!-- Theme Selector -->
-<div class="theme-section">
-  <span class="theme-label">🎨 カードテーマ</span>
-  <select class="theme-select" id="themeSelect"></select>
-</div>
 
 <!-- Search -->
 <div class="search-section">
@@ -853,16 +793,12 @@ let selectedSlot = -1;
 
 // ─── Build slots grid ─────────────────────────────────────────────────────────
 function buildGrid() {
-  const t = THEMES[currentTheme];
   const grid = document.getElementById('slotsGrid');
   grid.innerHTML = '';
   slots.forEach((poke, i) => {
     const div = document.createElement('div');
     div.className = 'pokemon-slot' + (poke ? ' filled' : '');
     div.dataset.slot = i;
-    // Apply theme border colors via inline style
-    div.style.borderColor = poke ? t.border : t.borderEmpty;
-    if (poke) div.style.background = `linear-gradient(160deg, ${t.cardBg1} 0%, ${t.cardBg2} 100%)`;
 
     const ballDeco = createBallSVG(0.06);
     ballDeco.className = 'slot-ball-deco';
@@ -978,53 +914,7 @@ function createBallSVG(opacity = 0.5) {
 }
 
 // ─── Themes ───────────────────────────────────────────────────────────────────
-const THEMES = {
-  normal:   { label:'⬜ ノーマル',   cardBg1:'#2a2a20', cardBg2:'#1e1e16', border:'rgba(210,210,160,0.7)', borderEmpty:'rgba(210,210,160,0.2)', nameColor:'#fffff0', accentColor:'#d4d48c', bodyBg1:'#18180f', glow:'rgba(200,200,120,0.8)' },
-  fire:     { label:'🔥 ほのお',    cardBg1:'#2a1000', cardBg2:'#1e0800', border:'rgba(255,140,40,0.8)',  borderEmpty:'rgba(255,140,40,0.2)',  nameColor:'#fff4e0', accentColor:'#ff9840', bodyBg1:'#180800', glow:'rgba(255,120,0,0.8)' },
-  water:    { label:'🌊 みず',      cardBg1:'#002a3a', cardBg2:'#001e2a', border:'rgba(60,180,255,0.8)',  borderEmpty:'rgba(60,180,255,0.2)',  nameColor:'#e0f6ff', accentColor:'#3cb4ff', bodyBg1:'#001520', glow:'rgba(0,140,255,0.8)' },
-  electric: { label:'⚡ でんき',    cardBg1:'#252000', cardBg2:'#1a1500', border:'rgba(255,230,0,0.8)',   borderEmpty:'rgba(255,230,0,0.2)',   nameColor:'#fffde8', accentColor:'#ffe800', bodyBg1:'#151200', glow:'rgba(255,220,0,0.8)' },
-  grass:    { label:'🌿 くさ',      cardBg1:'#0e2a0e', cardBg2:'#081e08', border:'rgba(80,220,80,0.8)',   borderEmpty:'rgba(80,220,80,0.2)',   nameColor:'#eafff0', accentColor:'#50dc50', bodyBg1:'#051505', glow:'rgba(0,200,0,0.8)' },
-  ice:      { label:'❄️ こおり',    cardBg1:'#002828', cardBg2:'#001c1c', border:'rgba(100,240,240,0.8)', borderEmpty:'rgba(100,240,240,0.2)', nameColor:'#e0ffff', accentColor:'#64f0f0', bodyBg1:'#001414', glow:'rgba(0,220,220,0.8)' },
-  fighting: { label:'🥊 かくとう',  cardBg1:'#2a0800', cardBg2:'#1e0400', border:'rgba(220,80,50,0.8)',   borderEmpty:'rgba(220,80,50,0.2)',   nameColor:'#ffede8', accentColor:'#dc5032', bodyBg1:'#180400', glow:'rgba(200,60,40,0.8)' },
-  poison:   { label:'☠️ どく',      cardBg1:'#200028', cardBg2:'#16001c', border:'rgba(180,40,220,0.8)',  borderEmpty:'rgba(180,40,220,0.2)',  nameColor:'#fce0ff', accentColor:'#b428dc', bodyBg1:'#120016', glow:'rgba(160,30,200,0.8)' },
-  ground:   { label:'🌍 じめん',    cardBg1:'#261c00', cardBg2:'#1a1200', border:'rgba(200,150,40,0.8)',  borderEmpty:'rgba(200,150,40,0.2)',  nameColor:'#fff8e0', accentColor:'#c89628', bodyBg1:'#160e00', glow:'rgba(190,140,30,0.8)' },
-  flying:   { label:'🕊️ ひこう',    cardBg1:'#0c1030', cardBg2:'#080a22', border:'rgba(140,190,255,0.8)', borderEmpty:'rgba(140,190,255,0.2)', nameColor:'#eef4ff', accentColor:'#8cbeff', bodyBg1:'#05061a', glow:'rgba(120,170,255,0.8)' },
-  psychic:  { label:'🔮 エスパー',  cardBg1:'#2a0018', cardBg2:'#1e0010', border:'rgba(255,60,130,0.8)',  borderEmpty:'rgba(255,60,130,0.2)',  nameColor:'#ffe8f4', accentColor:'#ff3c82', bodyBg1:'#18000e', glow:'rgba(255,50,120,0.8)' },
-  bug:      { label:'🐛 むし',      cardBg1:'#141e00', cardBg2:'#0c1400', border:'rgba(180,210,20,0.8)',  borderEmpty:'rgba(180,210,20,0.2)',  nameColor:'#f4ffe0', accentColor:'#b4d214', bodyBg1:'#080e00', glow:'rgba(170,200,20,0.8)' },
-  rock:     { label:'🪨 いわ',      cardBg1:'#221600', cardBg2:'#180e00', border:'rgba(180,130,40,0.8)',  borderEmpty:'rgba(180,130,40,0.2)',  nameColor:'#fff4d8', accentColor:'#b48228', bodyBg1:'#140a00', glow:'rgba(170,120,30,0.8)' },
-  ghost:    { label:'👻 ゴースト',  cardBg1:'#160020', cardBg2:'#0e0016', border:'rgba(110,70,190,0.8)',  borderEmpty:'rgba(110,70,190,0.2)',  nameColor:'#ede0ff', accentColor:'#6e46be', bodyBg1:'#0c0012', glow:'rgba(100,60,180,0.8)' },
-  dragon:   { label:'🐉 ドラゴン',  cardBg1:'#0a0028', cardBg2:'#06001c', border:'rgba(100,50,255,0.8)',  borderEmpty:'rgba(100,50,255,0.2)',  nameColor:'#ece0ff', accentColor:'#6432ff', bodyBg1:'#040014', glow:'rgba(90,40,255,0.8)' },
-  dark:     { label:'🌑 あく',      cardBg1:'#1a1410', cardBg2:'#100c08', border:'rgba(160,130,90,0.8)',  borderEmpty:'rgba(160,130,90,0.2)',  nameColor:'#f4ece4', accentColor:'#a0825a', bodyBg1:'#0e0a06', glow:'rgba(140,110,80,0.8)' },
-  steel:    { label:'⚙️ はがね',    cardBg1:'#141420', cardBg2:'#0c0c18', border:'rgba(180,200,230,0.8)', borderEmpty:'rgba(180,200,230,0.2)', nameColor:'#f0f4ff', accentColor:'#b4c8e6', bodyBg1:'#080810', glow:'rgba(170,190,220,0.8)' },
-  fairy:    { label:'🌸 フェアリー', cardBg1:'#2a0a18', cardBg2:'#1e0610', border:'rgba(255,100,180,0.8)', borderEmpty:'rgba(255,100,180,0.2)', nameColor:'#ffecf6', accentColor:'#ff64b4', bodyBg1:'#18040e', glow:'rgba(255,80,170,0.8)' },
-};
-
-let currentTheme = 'normal';
-
-// Build dropdown dynamically
-(function buildThemeSelect() {
-  const sel = document.getElementById('themeSelect');
-  Object.entries(THEMES).forEach(([key, t]) => {
-    const opt = document.createElement('option');
-    opt.value = key;
-    opt.textContent = t.label;
-    if (key === 'normal') opt.selected = true;
-    sel.appendChild(opt);
-  });
-})();
-
-function applyTheme(themeName) {
-  const t = THEMES[themeName];
-  if (!t) return;
-  currentTheme = themeName;
-  document.body.style.background = t.bodyBg1;
-  document.querySelector('.ball-svg').style.filter = `drop-shadow(0 0 16px ${t.glow}) drop-shadow(0 0 6px rgba(0,0,0,0.8))`;
-  buildGrid();
-}
-
-document.getElementById('themeSelect').addEventListener('change', e => {
-  applyTheme(e.target.value);
-});
+let currentTheme = 'light';
 
 // ─── Trainer Name ─────────────────────────────────────────────────────────────
 let trainerName = '';
@@ -1264,43 +1154,39 @@ async function generateImage() {
   const ctx = canvas.getContext('2d');
   const W = 1080, H = 1080;
   canvas.width = W; canvas.height = H;
-  const th = THEMES[currentTheme];
+
+  // Fixed light canvas palette
+  const th = {
+    bodyBg1: '#f7f7f9', cardBg1: '#ffffff', cardBg2: '#f0f0f5',
+    border: 'rgba(200,57,80,0.4)', borderEmpty: 'rgba(180,180,200,0.3)',
+    nameColor: '#1a1a2e', accentColor: '#e63950',
+  };
 
   // Background
   ctx.fillStyle = th.bodyBg1;
   ctx.fillRect(0, 0, W, H);
 
-  // Gradient BG
-  const grad = ctx.createRadialGradient(200, 150, 0, 200, 150, 500);
-  grad.addColorStop(0, th.glow.replace('0.7', '0.1'));
+  // Subtle gradient
+  const grad = ctx.createRadialGradient(200, 150, 0, 200, 150, 600);
+  grad.addColorStop(0, 'rgba(230,57,80,0.06)');
   grad.addColorStop(1, 'transparent');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  const grad2 = ctx.createRadialGradient(900, 900, 0, 900, 900, 500);
-  grad2.addColorStop(0, th.accentColor + '18');
-  grad2.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad2;
   ctx.fillRect(0, 0, W, H);
 
   // Title
   ctx.textAlign = 'center';
   ctx.font = 'bold 52px "Noto Sans JP", sans-serif';
-  const titleGrad = ctx.createLinearGradient(340, 0, 740, 0);
-  titleGrad.addColorStop(0, th.accentColor);
-  titleGrad.addColorStop(0.5, '#ffffff');
-  titleGrad.addColorStop(1, th.accentColor);
-  ctx.fillStyle = titleGrad;
+  ctx.fillStyle = '#1a1a2e';
   ctx.fillText('推しポケモン 6選', W/2, 80);
 
   // Trainer name or subtitle
   ctx.font = '18px "Noto Sans JP", sans-serif';
-  ctx.fillStyle = 'rgba(240,240,255,0.4)';
+  ctx.fillStyle = '#8888aa';
   ctx.fillText(trainerName ? `${trainerName} のパーティ` : 'MY FAVORITE POKÉMON', W/2, 112);
 
   // Accent line
-  ctx.strokeStyle = th.accentColor + '44';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(230,57,80,0.25)';
+  ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(80, 130); ctx.lineTo(W-80, 130); ctx.stroke();
 
   // Draw 6 cards
@@ -1308,8 +1194,6 @@ async function generateImage() {
   const cw = 300, ch = 380;
   const gx = (W - cols * cw - (cols-1)*24) / 2;
   const gy = 155;
-
-  const filled = slots.filter(s => s);
 
   for (let i = 0; i < 6; i++) {
     const col = i % cols, row = Math.floor(i / cols);
@@ -1319,8 +1203,8 @@ async function generateImage() {
   }
 
   // Footer
-  ctx.font = '22px "Noto Sans JP", sans-serif';
-  ctx.fillStyle = th.accentColor + '99';
+  ctx.font = '20px "Noto Sans JP", sans-serif';
+  ctx.fillStyle = 'rgba(230,57,80,0.6)';
   ctx.textAlign = 'center';
   ctx.fillText('#私の推しポケ6選', W/2, H - 36);
 
@@ -1382,7 +1266,7 @@ async function drawCard(ctx, x, y, w, h, poke, idx, th) {
 
   // JP Name
   ctx.font = 'bold 26px "Noto Sans JP", sans-serif';
-  ctx.fillStyle = th.nameColor;
+  ctx.fillStyle = th.nameColor || '#1a1a2e';
   ctx.fillText(poke.nameJp, x + w/2, y + 200);
 
   // EN Name
@@ -1485,7 +1369,6 @@ function showToast(msg) {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-applyTheme('normal');
 buildGrid();
 loadPokemonList();
 </script>
