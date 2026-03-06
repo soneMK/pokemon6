@@ -1053,10 +1053,10 @@
         <button class="gen-btn" data-gen="8">第8世代</button>
         <button class="gen-btn" data-gen="9">第9世代</button>
       </div>
-      <div class="gen-grid-panel" id="genGridPanel" style="display:none">
+      <div class="type-filter" id="typeFilter" style="margin-top:10px"></div>
+      <div class="gen-grid-panel" id="genGridPanel" style="display:none;margin-top:10px">
         <div class="gen-grid" id="genGrid"></div>
       </div>
-      <div class="type-filter" id="typeFilter" style="margin-top:10px"></div>
     </div>
   </div>
 </div>
@@ -1947,6 +1947,7 @@ let canvasThemeColor = '#e63950'; // 画像生成テーマカラー
       activeTypeFilter = activeTypeFilter === t ? null : t;
       document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.type === activeTypeFilter));
       if (activeGen !== null) renderGenGrid(activeGen);
+      else document.getElementById('genGridPanel').style.display = 'none';
       updateGachaBtn();
     };
     container.appendChild(btn);
@@ -1979,15 +1980,31 @@ let canvasThemeColor = '#e63950'; // 画像生成テーマカラー
 })();
 
 // ─── Generation Browser (updated with type filter + gen gacha) ────────────────
-function renderGenGrid(gen) {
+async function renderGenGrid(gen) {
   const panel = document.getElementById('genGridPanel');
   const grid = document.getElementById('genGrid');
   panel.style.display = 'block';
   grid.innerHTML = '<div class="gen-loading">読み込み中...</div>';
 
   const [start, end] = GEN_RANGES[gen];
-  let mons = pokemonList.filter(p => p.id >= start && p.id <= end);
+  const genMons = pokemonList.filter(p => p.id >= start && p.id <= end);
 
+  // タイプフィルターが有効なら全ポケモンのタイプをプリフェッチ
+  if (activeTypeFilter) {
+    const uncached = genMons.filter(p => !typeCache[p.id]);
+    if (uncached.length > 0) {
+      grid.innerHTML = '<div class="gen-loading">タイプ情報を取得中...</div>';
+      await Promise.all(uncached.map(async p => {
+        try {
+          const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
+          const data = await res.json();
+          typeCache[p.id] = { types: data.types.map(t => t.type.name), nameEn: data.name };
+        } catch(e) {}
+      }));
+    }
+  }
+
+  let mons = genMons;
   if (activeTypeFilter) {
     mons = mons.filter(p => typeCache[p.id] && typeCache[p.id].types.includes(activeTypeFilter));
   }
