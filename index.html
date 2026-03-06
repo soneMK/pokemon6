@@ -91,6 +91,90 @@
     color: var(--text-muted);
   }
 
+  /* ── PT MANAGER ── */
+  .pt-section {
+    max-width: 900px;
+    margin: 0 auto 28px;
+    padding: 0 20px;
+  }
+  .pt-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pt-label {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .pt-name-input {
+    flex: 1;
+    min-width: 120px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    caret-color: var(--accent);
+  }
+  .pt-name-input:focus { border-color: var(--accent); }
+  .pt-name-input::placeholder { color: var(--text-muted); }
+  .pt-save-btn {
+    padding: 8px 18px;
+    border-radius: 50px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s;
+    flex-shrink: 0;
+  }
+  .pt-save-btn:hover { background: var(--accent2); }
+  .pt-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .pt-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 5px 6px 5px 14px;
+    font-size: 0.78rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pt-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .pt-chip-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pt-chip-del {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.08);
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .pt-chip-del:hover { background: var(--accent); color: #fff; }
+
   /* ── SEARCH ── */
   .search-section {
     max-width: 520px;
@@ -748,6 +832,16 @@
   <p class="subtitle">MY FAVORITE POKÉMON</p>
   <p class="author-msg">ご意見・ご要望は <a class="author-link" href="https://x.com/ekiben_mk" target="_blank" rel="noopener">𝕏 @ekiben_mk</a> まで</p>
 </header>
+
+<!-- PT Manager -->
+<div class="pt-section">
+  <div class="pt-bar">
+    <span class="pt-label">💾 PT保存</span>
+    <input type="text" class="pt-name-input" id="ptNameInput" placeholder="PT名を入力..." maxlength="20" />
+    <button class="pt-save-btn" id="ptSaveBtn">保存</button>
+  </div>
+  <div class="pt-list" id="ptList"></div>
+</div>
 
 <!-- Trainer Name -->
 <div class="trainer-section">
@@ -1504,6 +1598,83 @@ document.getElementById('shareBtn').addEventListener('click', () => {
   window.open(url, '_blank');
 });
 
+// ─── PT Manager ───────────────────────────────────────────────────────────────
+const PT_STORAGE_KEY = 'oshi_pokemon_pts';
+const PT_MAX = 20;
+
+function loadPTs() {
+  try { return JSON.parse(localStorage.getItem(PT_STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function savePTs(pts) {
+  try { localStorage.setItem(PT_STORAGE_KEY, JSON.stringify(pts)); } catch {}
+}
+
+function renderPTList() {
+  const pts = loadPTs();
+  const list = document.getElementById('ptList');
+  list.innerHTML = '';
+  pts.forEach((pt, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'pt-chip';
+    chip.title = `クリックで読み込み：${pt.name}`;
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'pt-chip-name';
+    // Show pokemon names as preview
+    const preview = pt.slots.filter(s => s).map(s => s.nameJp).join('・') || '空';
+    nameEl.textContent = pt.name;
+    nameEl.title = preview;
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'pt-chip-del';
+    delBtn.innerHTML = '✕';
+    delBtn.title = '削除';
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      const pts = loadPTs();
+      pts.splice(idx, 1);
+      savePTs(pts);
+      renderPTList();
+      showToast(`「${pt.name}」を削除しました`);
+    };
+
+    chip.onclick = () => loadPT(pt);
+    chip.appendChild(nameEl);
+    chip.appendChild(delBtn);
+    list.appendChild(chip);
+  });
+}
+
+function loadPT(pt) {
+  slots = pt.slots.map(s => s ? { ...s } : null);
+  trainerName = pt.trainerName || '';
+  document.getElementById('trainerInput').value = trainerName;
+  buildGrid();
+  showToast(`「${pt.name}」を読み込みました！`);
+}
+
+document.getElementById('ptSaveBtn').addEventListener('click', () => {
+  const nameInput = document.getElementById('ptNameInput');
+  const name = nameInput.value.trim() || `PT${Date.now()}`;
+  const pts = loadPTs();
+  if (pts.length >= PT_MAX) { showToast(`保存できるPTは${PT_MAX}件までです`); return; }
+  // Check dupe name
+  const dupeIdx = pts.findIndex(p => p.name === name);
+  const entry = { name, slots: slots.map(s => s ? { ...s } : null), trainerName };
+  if (dupeIdx >= 0) {
+    pts[dupeIdx] = entry; // overwrite
+    showToast(`「${name}」を上書き保存しました！`);
+  } else {
+    pts.push(entry);
+    showToast(`「${name}」を保存しました！`);
+  }
+  savePTs(pts);
+  renderPTList();
+  nameInput.value = '';
+});
+
 // ─── Toast ────────────────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1514,6 +1685,7 @@ function showToast(msg) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 buildGrid();
+renderPTList();
 loadPokemonList();
 </script>
 </body>
