@@ -800,7 +800,6 @@ function getRegionalForms(varieties) {
     return Object.keys(REGION_SUFFIXES).some(r => suffix === r || suffix.startsWith(r));
   });
 }
-const varietiesCache = {}; // speciesId → [{formKey, nameJp, nameEn}]
 const spriteBase = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
 
 // ─── Full Pokémon list fetched from PokeAPI ───────────────────────────────────
