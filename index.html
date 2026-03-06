@@ -557,6 +557,19 @@
 
   .btn-generate:active { transform: translateY(0); }
 
+  .btn-gacha {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+  }
+  .btn-gacha:hover {
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.45);
+  }
+  .btn-gacha:active { transform: translateY(0); }
+  .btn-gacha:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
   .btn-share {
     background: #1a1a2e;
     color: #fff;
@@ -940,6 +953,13 @@
   <div class="gen-grid-panel" id="genGridPanel" style="display:none">
     <div class="gen-grid" id="genGrid"></div>
   </div>
+</div>
+
+<!-- Gacha -->
+<div style="display:flex;justify-content:center;margin:0 auto 20px">
+  <button class="btn btn-gacha" id="gachaBtn">
+    <span class="btn-icon">🎰</span> ガチャ！
+  </button>
 </div>
 
 <!-- Slots -->
@@ -1414,6 +1434,13 @@ async function selectPokemon(id, nameJp) {
     name = typeCache[id].nameEn;
   } catch(e) {}
 
+  // 日本語名が未取得なら取得する
+  const poke = pokemonList.find(p => p.id === id);
+  if (poke && !poke.nameJp) {
+    poke.nameJp = await getJpName(id, name);
+  }
+  const resolvedNameJp = (poke && poke.nameJp) ? poke.nameJp : nameJp;
+
   // Fetch varieties to find regional forms
   let forms = [];
   try {
@@ -1434,13 +1461,13 @@ async function selectPokemon(id, nameJp) {
   } catch(e) {}
 
   slots[targetSlot] = {
-    id, pokeId: id, nameJp, name, types,
+    id, pokeId: id, nameJp: resolvedNameJp, name, types,
     forms: forms.length > 1 ? forms : [],
-    activeFormKey: name, // default form EN name
+    activeFormKey: name,
     comment: ''
   };
   buildGrid();
-  showToast(`${nameJp} を追加しました！`);
+  showToast(`${resolvedNameJp} を追加しました！`);
 }
 
 async function switchForm(slotIdx, form) {
@@ -1676,6 +1703,49 @@ document.getElementById('shareBtn').addEventListener('click', () => {
   const siteUrl = 'https://sonemk.github.io/pokemon6/';
   const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(siteUrl);
   window.open(url, '_blank');
+});
+
+// ─── Gacha ────────────────────────────────────────────────────────────────────
+document.getElementById('gachaBtn').addEventListener('click', async () => {
+  if (!listReady || pokemonList.length === 0) {
+    showToast('データ読み込み中です。少し待ってから試してください！');
+    return;
+  }
+  const btn = document.getElementById('gachaBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> ガチャ中...';
+
+  // Pick 6 unique random pokemon
+  const pool = [...pokemonList];
+  const picked = [];
+  while (picked.length < 6 && pool.length > 0) {
+    const idx = Math.floor(Math.random() * pool.length);
+    picked.push(pool.splice(idx, 1)[0]);
+  }
+
+  // Fetch types for each
+  slots = [null, null, null, null, null, null];
+  await Promise.all(picked.map(async (p, i) => {
+    let types = [], name = p.nameEn;
+    try {
+      if (!typeCache[p.id]) {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
+        const data = await res.json();
+        typeCache[p.id] = { types: data.types.map(t => t.type.name), nameEn: data.name };
+      }
+      types = typeCache[p.id].types;
+      name = typeCache[p.id].nameEn;
+    } catch(e) {}
+    // 日本語名が未取得なら取得する
+    if (!p.nameJp) p.nameJp = await getJpName(p.id, name);
+    const nameJp = p.nameJp || name;
+    slots[i] = { id: p.id, pokeId: p.id, nameJp, name, types, forms: [], activeFormKey: name, comment: '' };
+  }));
+
+  buildGrid();
+  btn.disabled = false;
+  btn.innerHTML = '<span class="btn-icon">🎰</span> ガチャ！';
+  showToast('ランダム6選ガチャ完了！');
 });
 
 // ─── Generation Browser ───────────────────────────────────────────────────────
