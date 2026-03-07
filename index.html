@@ -1123,17 +1123,69 @@
 const typeCache = {};
 const varietiesCache = {}; // speciesId → [{formKey, pokeId, label, isDefault}]
 
-// リージョンフォームのサフィックス → 日本語ラベル
-const REGION_SUFFIXES = {
-  'alola':'アローラ', 'galar':'ガラル', 'hisui':'ヒスイ', 'paldea':'パルデア'
+// フォームラベル辞書（サフィックス → 日本語）
+const FORM_LABEL_MAP = {
+  // リージョンフォーム
+  'alola': 'アローラのすがた', 'galar': 'ガラルのすがた',
+  'hisui': 'ヒスイのすがた', 'paldea': 'パルデアのすがた',
+  // 霊獣・神獣
+  'therian': '霊獣フォルム', 'incarnate': 'けしんフォルム',
+  // メガ進化
+  'mega': 'メガ進化', 'mega-x': 'メガ進化X', 'mega-y': 'メガ進化Y',
+  // キョダイマックス
+  'gmax': 'キョダイマックス',
+  // フォルム違い
+  'origin': 'オリジンフォルム', 'original': 'オリジンフォルム',
+  'sky': 'スカイフォルム', 'land': 'ランドフォルム',
+  'blade': 'ブレードフォルム', 'shield': 'シールドフォルム',
+  'attack': 'アタックフォルム', 'defense': 'ディフェンスフォルム', 'speed': 'スピードフォルム',
+  'heat': 'ヒートロトム', 'wash': 'ウォッシュロトム', 'frost': 'フロストロトム',
+  'fan': 'ファンロトム', 'mow': 'カットロトム',
+  'black': 'ブラックフォルム', 'white': 'ホワイトフォルム',
+  'zen': 'ダルマモード', 'zen-galar': 'ガラルダルマモード',
+  'standard': 'ノーマルフォルム',
+  'pirouette': 'ステップフォルム', 'aria': 'ボイスフォルム',
+  'resolute': 'かくごのすがた',
+  'ordinary': 'ノーマルフォルム', 'therian-forme': '霊獣フォルム',
+  'complete': 'パーフェクトフォルム',
+  '10': '10%フォルム', '50': '50%フォルム',
+  'dusk': 'たそがれのすがた', 'midnight': 'まひるのすがた', 'midday': 'まひるのすがた',
+  'school': 'スクールフォルム',
+  'solo': 'はぐれのすがた', 'totem': 'ぬしのすがた',
+  'disguised': 'へんそうのすがた', 'busted': 'ばけのかわのすがた',
+  'hangry': 'はらぺこのすがた', 'full-belly': 'まんぷくのすがた',
+  'noice': 'ノイスフォルム', 'ice': 'こおりのすがた',
+  'crowned': 'ばつぐんのよろいのすがた',
+  'hero': 'ゆうしゃのすがた', 'eternal': 'えいえんのすがた',
+  'single-strike': 'いちげきのすがた', 'rapid-strike': 'れんげきのすがた',
+  'ice-rider': 'アイスライダー', 'shadow-rider': 'シャドーライダー',
+  'low-key': 'ローキーフォルム', 'amped': 'おとぼけフォルム',
+  'blue-striped': 'あおすじのすがた', 'red-striped': 'あかすじのすがた',
+  'white-striped': 'しろすじのすがた',
+  'roaming': 'ほうろうのすがた',
+  'blood-moon': 'ブラッドムーンのすがた',
+  'wellspring': 'いずみのめんのすがた', 'hearthflame': 'かまどのめんのすがた',
+  'cornerstone': 'いしずえのめんのすがた', 'teal-mask': 'もとのすがた',
+  'stellar': 'ステラのすがた',
+  'family-of-three': 'さんびきのすがた', 'family-of-four': 'よんびきのすがた',
+  'two-segment': 'にふしのすがた', 'three-segment': 'みふしのすがた', 'four-segment': 'よふしのすがた',
+  'gulping': 'ごくりのすがた', 'gorging': 'むしゃむしゃのすがた',
 };
-function getRegionalForms(varieties) {
-  // default form + regional forms only
-  return varieties.filter(v => {
-    if (v.isDefault) return true;
-    const suffix = v.formKey.split('-').slice(1).join('-');
-    return Object.keys(REGION_SUFFIXES).some(r => suffix === r || suffix.startsWith(r));
-  });
+
+function getFormLabel(formKey) {
+  const parts = formKey.split('-');
+  // Try progressively shorter suffixes
+  for (let i = 1; i < parts.length; i++) {
+    const suffix = parts.slice(i).join('-');
+    if (FORM_LABEL_MAP[suffix]) return FORM_LABEL_MAP[suffix];
+  }
+  // Fallback: capitalize suffix
+  const suffix = parts.slice(1).join('-');
+  return suffix ? `${suffix}のすがた` : '通常のすがた';
+}
+
+function getAllForms(varieties) {
+  return varieties; // 全フォームを返す
 }
 const spriteBase = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
 
@@ -1588,7 +1640,7 @@ async function selectPokemon(id, nameJp) {
   }
   const resolvedNameJp = (poke && poke.nameJp) ? poke.nameJp : nameJp;
 
-  // Fetch varieties to find regional forms
+  // Fetch varieties（全フォーム）
   let forms = [];
   try {
     if (!varietiesCache[id]) {
@@ -1596,13 +1648,11 @@ async function selectPokemon(id, nameJp) {
       const data = await res.json();
       const parsed = data.varieties.map(v => {
         const pokeId = parseInt(v.pokemon.url.split('/').filter(Boolean).pop());
-        const formKey = v.pokemon.name; // e.g. "raichu-alola"
-        const suffix = formKey.split('-').slice(1).join('-');
-        const regionKey = Object.keys(REGION_SUFFIXES).find(r => suffix === r || suffix.startsWith(r));
-        const label = regionKey ? `${REGION_SUFFIXES[regionKey]}のすがた` : '通常のすがた';
+        const formKey = v.pokemon.name;
+        const label = v.is_default ? '通常のすがた' : getFormLabel(formKey);
         return { formKey, pokeId, label, isDefault: v.is_default };
       });
-      varietiesCache[id] = getRegionalForms(parsed);
+      varietiesCache[id] = getAllForms(parsed);
     }
     forms = varietiesCache[id];
   } catch(e) {}
